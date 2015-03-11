@@ -1,7 +1,10 @@
+#if blackjack
+#if busted
+
 require 'pry'
 
 SUIT = ['C', 'D', 'H', 'S']
-NUMBER = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'J', 'Q', 'K']
+NUMBER = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 
 def initialize_deck(deck)
   3.times do
@@ -16,16 +19,22 @@ def deal_a_card(deck)
   deck.pop  
 end
 
-def show_user_cards_and_point(user_cards)
+def show_user_cards(user_cards)
   puts "Now User's cards are: "
   user_cards.each {|card| p card}
+end
+
+def show_dealer_cards(dealer_cards)
+  puts "Now Dealer's cards are: "
+  dealer_cards.each {|card| p card}
+end
+
+def show_user_point(user_cards)
   puts "User's point are: "
   p count_the_point(user_cards)
 end
 
-def show_dealer_cards_and_point(dealer_cards)
-  puts "Now Dealer's cards are: "
-  dealer_cards.each {|card| p card}
+def show_dealer_point(dealer_cards)
   puts "Dealer's point are: "
   p count_the_point(dealer_cards)
 end
@@ -49,19 +58,27 @@ def count_the_point(cards)
   point
 end
 
+def blackjack?(cards)
+  count_the_point(cards) == 21
+end
+
+def busted?(cards)
+  count_the_point(cards) > 21
+end
+
 def initialization(deck, user_cards, dealer_cards)
   initialize_deck(deck)
-  user_cards << deal_a_card(deck)
-  user_cards << deal_a_card(deck)
-  show_user_cards_and_point(user_cards)
-  dealer_cards << deal_a_card(deck)
-  dealer_cards << deal_a_card(deck)
-  show_dealer_cards_and_point(dealer_cards)
+  2.times {user_cards << deal_a_card(deck)}
+  show_user_cards(user_cards)
+  show_user_point(user_cards)
+  2.times {dealer_cards << deal_a_card(deck)}
+  show_dealer_cards(dealer_cards)
+  show_dealer_point(dealer_cards)
 end
 
 def user_round(deck, user_cards, point)
   winner = ' '
-  if count_the_point(user_cards) == 21
+  if blackjack?(user_cards)
     puts "Blackjack!!"
     winner = 'user'
     point[:user] = 21
@@ -76,13 +93,14 @@ def user_round(deck, user_cards, point)
       next
     elsif hit_or_stay == 'h'
       user_cards << deal_a_card(deck)
-      show_user_cards_and_point(user_cards)
-      if count_the_point(user_cards) > 21
+      show_user_cards(user_cards)
+      show_user_point(user_cards)
+      if busted?(user_cards)
         puts "Busted!!"
         winner = 'dealer'
         point[:user] = count_the_point(user_cards)
         break
-      elsif count_the_point(user_cards) == 21
+      elsif blackjack?(user_cards)
         puts "Blackjack!!"
         winner = 'user'
         point[:user] = 21
@@ -102,12 +120,12 @@ end
 def dealer_round(deck, dealer_cards, point, winner)
   loop do
     sleep(3)
-    if count_the_point(dealer_cards) > 21
+    if busted?(dealer_cards)
       puts "Busted!!"
       winner = 'user'
       point[:dealer] = count_the_point(dealer_cards)
       break
-    elsif count_the_point(dealer_cards) == 21
+    elsif blackjack?(dealer_cards)
       puts "Blackjack!!"
       winner = 'dealer'
       point[:dealer] = 21
@@ -115,7 +133,8 @@ def dealer_round(deck, dealer_cards, point, winner)
     else
       if count_the_point(dealer_cards) < 17
         dealer_cards << deal_a_card(deck)
-        show_dealer_cards_and_point(dealer_cards)
+        show_dealer_cards(dealer_cards)
+        show_dealer_point(dealer_cards)
       else
         point[:dealer] = count_the_point(dealer_cards)
         break
